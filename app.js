@@ -3,6 +3,7 @@ const amountInput = document.getElementById('amount');
 const currencySelect = document.getElementById('currency');
 const resultElement = document.getElementById('result');
 const ctx = document.getElementById('myChart').getContext('2d');
+
 const chart = new Chart(ctx, {
   type: 'line',
   data: {
@@ -27,15 +28,26 @@ conversionForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const amount = parseFloat(amountInput.value);
   const currency = currencySelect.value;
+
   try {
-    const response = await fetch('https://mindicador.cl/api/');
+    const url = `https://currency-conversion-and-exchange-rates.p.rapidapi.com/latest?from=CLP&to=${currency}`;
+    const options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': '3d6ce1dc4dmsheff8f4ab64cf10cp104759jsnfc9fc7288273',
+        'X-RapidAPI-Host': 'currency-conversion-and-exchange-rates.p.rapidapi.com'
+      }
+    };
+
+    const response = await fetch(url, options);
     const data = await response.json();
-    const rate = data.rates[currency];
+    const rate = data?.rates?.CLP;
+
     if (!rate) {
       throw new Error(`No se encontró la moneda ${currency}`);
     }
-    const result = amount * rate;
-    resultElement.textContent = `Resultado: ${result.toFixed(2)} ${currency}`;
+    const result = parseFloat(amount / rate).toFixed(2);
+    resultElement.textContent = `Resultado: ${result} ${currency}`;
     chart.data.labels.push(currency);
     chart.data.datasets[0].data.push(rate);
     chart.update();
